@@ -19,7 +19,7 @@ public class Product {
     private String name;
     private String description;
     private Long price;
-    private Long count;
+    private Long quantity;
     @Enumerated(EnumType.STRING)
-    private ProductStatus productStatus;
+    private ProductStatus expirationDate; // Срок годности
 }
