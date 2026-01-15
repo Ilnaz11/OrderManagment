@@ -34,5 +34,4 @@ public class User {
     private Role role;
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
-
 }
