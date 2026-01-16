@@ -1,7 +1,7 @@
 package com.example.OrderManagment.Entity;
 
 public enum OrderStatus {
-    CREATED,
+    CREATED, // Создан - Оплачен - Подтвержден - отправлен - доставлен - отменен
     PAID,
     CONFIRMED,
     SHIPPED,

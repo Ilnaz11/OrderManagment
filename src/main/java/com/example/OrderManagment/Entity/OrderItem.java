@@ -18,10 +18,19 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "quantity")
     private Long quantity;
+    @Column(name = "priceAtOrderTime")
     private BigDecimal priceAtOrderTime; // Цена товара на момент добавления в заказ
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private OrderItemStatus status;
 
+    @ManyToOne
+    @JoinColumn(name = "product_id")
     private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
 }
