@@ -22,12 +22,12 @@ public class Product {
     private String name;
     @Column(name = "description")
     private String description;
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private BigDecimal price;
     @Column(name = "quantity")
-    private Long quantity;
+    private Integer quantity;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "expirationDate")
-    private ProductStatus expirationDate; // Срок годности
+    @Column(name = "product_Status")
+    private ProductStatus productStatus;
 }

@@ -1,4 +1,4 @@
 package com.example.OrderManagment.dto;
 
-public class ProductRequestDto {
+public class OrderHistoryResponseDto {
 }
