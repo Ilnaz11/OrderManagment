@@ -19,8 +19,8 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "quantity")
-    private Long quantity;
-    @Column(name = "priceAtOrderTime")
+    private Integer quantity;
+    @Column(name = "price_At_Order_Time", nullable = false)
     private BigDecimal priceAtOrderTime; // Цена товара на момент добавления в заказ
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -30,7 +30,7 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 }
