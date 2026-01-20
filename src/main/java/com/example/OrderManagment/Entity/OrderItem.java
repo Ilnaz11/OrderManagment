@@ -30,7 +30,7 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // в ManyToOne fetch всегда по умолчанию EAGER,но нам такое не нужно
     @JoinColumn(name = "order_id")
     private Order order;
 }

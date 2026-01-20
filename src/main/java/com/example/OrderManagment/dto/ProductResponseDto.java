@@ -11,6 +11,6 @@ public class ProductResponseDto {
     private String name;
     private String description;
     private BigDecimal price;
-    private Long quantity;
+    private Integer quantity;
     private ProductStatus productStatus;
 }

@@ -1,7 +1,6 @@
 package com.example.OrderManagment.dto;
 
 import com.example.OrderManagment.Entity.OrderStatus;
-import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
