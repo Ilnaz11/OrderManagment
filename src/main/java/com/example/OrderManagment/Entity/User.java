@@ -19,6 +19,7 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // опа на и что будет?
     private Long id;
     @Column(name = "username", nullable = false)
     private String username;
