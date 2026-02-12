@@ -25,7 +25,7 @@ public class Product {
     @Column(name = "price", nullable = false)
     private BigDecimal price;
     @Column(name = "quantity")
-    private Integer quantity;
+    private Integer quantity; // количество в складе
 
     @Enumerated(EnumType.STRING)
     @Column(name = "product_Status")

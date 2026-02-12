@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,5 +34,5 @@ public class User {
     @Column(name = "role")
     private Role role;
     @OneToMany(mappedBy = "user")
-    private List<Order> orders;
+    private List<Order> orders = new ArrayList<>();
 }

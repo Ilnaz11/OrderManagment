@@ -11,9 +11,8 @@ import java.util.List;
 public class OrderResponseDto {
     private Long id;
     private BigDecimal totalPrice;
-    private OrderStatus currentStatus;
     private LocalDateTime createdAt;
     private LocalDateTime lastChange;
-    private OrderStatus orderStatus;
+    private OrderStatus currentStatus;
     private List<OrderItemResponse> items;
 }
