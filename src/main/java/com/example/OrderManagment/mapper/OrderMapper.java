@@ -50,4 +50,14 @@ public class OrderMapper {
         return orderResponseDto;
     }
 
+    public List<OrderResponseDto> toDtoList(List<Order> order) {
+        if (order == null) {
+            return null;
+        }
+
+        return order.stream()
+                .map(this::toDto)
+                .toList();
+    }
+
 }

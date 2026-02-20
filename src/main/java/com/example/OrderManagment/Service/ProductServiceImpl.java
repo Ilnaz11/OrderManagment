@@ -63,7 +63,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(Long id) {
+    public void deleteProduct(Long id) { // Тут добавлю реализацию чтобы соответствовало бизнес правилам
         productRepository.deleteById(id);
     }
 

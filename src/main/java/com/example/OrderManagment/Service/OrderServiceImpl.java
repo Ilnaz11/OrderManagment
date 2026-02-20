@@ -1,6 +1,8 @@
 package com.example.OrderManagment.Service;
 
+import ch.qos.logback.core.joran.conditional.IfAction;
 import com.example.OrderManagment.Entity.*;
+import com.example.OrderManagment.Exception.BusinessException;
 import com.example.OrderManagment.Exception.OrderNotFoundException;
 import com.example.OrderManagment.Exception.ProductNotFoundException;
 import com.example.OrderManagment.Exception.UserNotFoundException;
@@ -12,11 +14,13 @@ import com.example.OrderManagment.dto.CreateOrderRequestDto;
 import com.example.OrderManagment.dto.OrderResponseDto;
 import com.example.OrderManagment.dto.UpdateOrderStatusRequestDto;
 import com.example.OrderManagment.mapper.OrderMapper;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -128,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
 
 
         }
-        BigDecimal totalPrice = orderItems.stream() // Итоговая цена заказа цена * количество
+        BigDecimal totalPrice = orderItems.stream() // Итоговая цена заказа цена * количество товаров
                 .filter(orderItem -> orderItem.getStatus() == OrderItemStatus.ACTIVE)
                 .map(orderItem -> orderItem.getPriceAtOrderTime()
                         .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
@@ -142,43 +146,157 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-
     @Override
     public void removeItemOrder(Long orderId, Long orderItemId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Not found Order with id: " + orderId));
+
+        List<OrderItem> orderItems = order.getOrderItems();
+
+        if (order.getCurrentStatus() == OrderStatus.DELIVERED) {
+            throw new OrderNotFoundException("You cannot change the order information");
+        }
+
+        Optional<OrderItem> orderItem = orderItems.stream()
+                .filter(orderItem1 -> orderItem1.getId().equals(orderItemId)).findFirst();
+
+        if (orderItem.isPresent()) {
+            orderItems.removeIf(orderItem1 -> orderItem1.getId().equals(orderItemId));
+        }
+
+        Product product = orderItem.get().getProduct();
+        product.setQuantity(product.getQuantity() + orderItem.get().getQuantity());
+
+        BigDecimal totalPrice = orderItems.stream()
+                .filter(orderItem1 -> orderItem1.getStatus() == OrderItemStatus.ACTIVE)
+                .map(orderItem1 -> orderItem1.getPriceAtOrderTime()
+                        .multiply(BigDecimal.valueOf(orderItem1.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        order.setTotalPrice(totalPrice);
+
+        orderRepository.save(order);
 
     }
 
-//    Что я меняю?
-//Что может пойти не так?
-//Что должно измениться в системе в итоге?
-
     @Override
     public Optional<OrderResponseDto> getOrderById(Long id) {
-        return Optional.empty();
+        Optional<Order> optionalOrder = orderRepository.findById(id);
+        Order order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Not found Order with id: " + id));
+        return optionalOrder.map(orderMapper::toDto);
     }
 
     @Override
     public List<OrderResponseDto> getAllOrders() {
-        return List.of();
+        List<Order> order = orderRepository.findAll();
+        return orderMapper.toDtoList(order);
     }
 
     @Override
     public List<OrderResponseDto> getOrdersFromUser(Long userId) {
-        return List.of();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Not found User with id: " + userId));
+        List<Order> orders = orderRepository.findByUserId(userId);
+        return orderMapper.toDtoList(orders);
     }
 
     @Override
-    public OrderResponseDto updateOrderStatus(Long orderId, UpdateOrderStatusRequestDto updateOrderStatusRequestDto) {
-        return null;
-    }
+    public OrderResponseDto updateOrderStatus(Long orderId, UpdateOrderStatusRequestDto dto) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(()-> new OrderNotFoundException("Not found Order with id: " + orderId));
 
-    @Override
-    public void deleteById(Long id) {
+        if (order.getCurrentStatus() == OrderStatus.DELIVERED
+                || order.getCurrentStatus() == OrderStatus.CANCELLED) {
+            throw new BusinessException("You cannot change Order status");
+        }
+
+        List<OrderHistory> orderHistories = order.getOrderHistories();
+
+        if (!order.getCurrentStatus().canTransitionTo(dto.getOrderStatus())) {
+            throw new BusinessException("Нельзя перейти с " + order.getCurrentStatus() + "в " + dto.getOrderStatus());
+        }
+
+        if (order.getCurrentStatus() != dto.getOrderStatus()) {
+
+            OrderStatus oldStatus = order.getCurrentStatus();
+
+            OrderHistory orderHistory = new OrderHistory();
+            orderHistory.setOrder(order);
+            orderHistory.setUpdateDate(LocalDateTime.now());
+            orderHistory.setOldStatus(oldStatus);
+            orderHistory.setNewStatus(dto.getOrderStatus());
+            orderHistory.setComment("Статус заказа был изменен с " + order.getCurrentStatus()
+                    + "в статус" + dto.getOrderStatus());
+
+            orderHistories.add(orderHistory);
+
+            order.setCurrentStatus(dto.getOrderStatus());
+        }
+
+
+        Order savedOrderStatus = orderRepository.save(order);
+
+        return orderMapper.toDto(savedOrderStatus);
 
     }
 
     @Override
     public void cancelOrderItem(Long orderId, Long orderItemId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(()-> new OrderNotFoundException("Not found order with id: " + orderId));
 
+        List<OrderItem> orderItems = order.getOrderItems();
+
+        List<OrderHistory> orderHistories = order.getOrderHistories();
+
+        if (order.getCurrentStatus() == OrderStatus.DELIVERED ||
+                order.getCurrentStatus() == OrderStatus.CANCELLED) {
+            throw new BusinessException("You cannot change the order information");
+        }
+
+        OrderItem orderItem = orderItems.stream()
+                .filter(orderItem1 -> orderItem1.getId().equals(orderItemId)).findFirst()
+                .orElseThrow(() -> new OrderNotFoundException("Not found OrderItem"));
+
+        if (orderItem.getStatus() == OrderItemStatus.CANCELLED) {
+            throw new BusinessException("You cannot cancel a repeat order position");
+        }
+
+        orderItem.setStatus(OrderItemStatus.CANCELLED);
+
+        Product product = orderItem.getProduct();
+        product.setQuantity(product.getQuantity() + orderItem.getQuantity());
+
+        BigDecimal totalPrice = orderItems.stream()
+                .filter(orderItem2 ->  orderItem2.getStatus() == OrderItemStatus.ACTIVE)
+                .map(orderItem2 -> orderItem2.getPriceAtOrderTime()
+                        .multiply(BigDecimal.valueOf(orderItem2.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setTotalPrice(totalPrice);
+
+
+        boolean allItemsCancelled = orderItems.stream()
+                .allMatch(orderItem2 -> orderItem2.getStatus() == OrderItemStatus.CANCELLED);
+
+        if (allItemsCancelled) {
+            OrderStatus oldStatus = order.getCurrentStatus();
+            if (!oldStatus.canTransitionTo(OrderStatus.CANCELLED)) {
+                throw new BusinessException("Cannot cancel order from status: " + oldStatus);
+            }
+
+            order.setCurrentStatus(OrderStatus.CANCELLED);
+
+            OrderHistory orderHistory = new OrderHistory();
+            orderHistory.setOrder(order);
+            orderHistory.setUpdateDate(LocalDateTime.now());
+            orderHistory.setOldStatus(oldStatus);
+            orderHistory.setNewStatus(OrderStatus.CANCELLED);
+            orderHistory.setComment("Статус заказа был изменен с " + oldStatus + "на " + OrderStatus.CANCELLED);
+
+            orderHistories.add(orderHistory);
+
+        }
+
+        orderRepository.save(order);
     }
 }

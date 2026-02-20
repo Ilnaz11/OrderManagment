@@ -21,7 +21,7 @@ public class OrderItem {
     @Column(name = "quantity")
     private Integer quantity;
     @Column(name = "price_At_Order_Time", nullable = false)
-    private BigDecimal priceAtOrderTime; // Цена товара на момент добавления в заказ
+    private BigDecimal priceAtOrderTime;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private OrderItemStatus status;
