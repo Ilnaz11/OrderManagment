@@ -2,6 +2,7 @@ package com.example.OrderManagment.Service;
 
 import com.example.OrderManagment.Entity.User;
 import com.example.OrderManagment.Repository.UserRepository;
+import com.example.OrderManagment.dto.CreateUserRequestDto;
 import com.example.OrderManagment.dto.UserResponseDto;
 import com.example.OrderManagment.mapper.UserMapper;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,11 @@ public class UserServiceImpl implements UserService {
         this.userMapper = userMapper;
     }
 
-
     @Override
-    public UserResponseDto createUser(User user) {
-        User user1 = userRepository.save(user);
-        return userMapper.toDto(user1);
+    public UserResponseDto createUser(CreateUserRequestDto dto) {
+        User savedUser = userMapper.toEntity(dto);
+
+        return userMapper.toDto(savedUser);
     }
 
     @Override

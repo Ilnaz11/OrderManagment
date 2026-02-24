@@ -1,6 +1,5 @@
 package com.example.OrderManagment.Service;
 
-import ch.qos.logback.core.joran.conditional.IfAction;
 import com.example.OrderManagment.Entity.*;
 import com.example.OrderManagment.Exception.BusinessException;
 import com.example.OrderManagment.Exception.OrderNotFoundException;
@@ -14,13 +13,11 @@ import com.example.OrderManagment.dto.CreateOrderRequestDto;
 import com.example.OrderManagment.dto.OrderResponseDto;
 import com.example.OrderManagment.dto.UpdateOrderStatusRequestDto;
 import com.example.OrderManagment.mapper.OrderMapper;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -238,6 +235,11 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toDto(savedOrderStatus);
 
     }
+
+//    @Override
+//    public void deleteById(Long id) {
+//        orderRepository.deleteById(id);
+//    }
 
     @Override
     public void cancelOrderItem(Long orderId, Long orderItemId) {
