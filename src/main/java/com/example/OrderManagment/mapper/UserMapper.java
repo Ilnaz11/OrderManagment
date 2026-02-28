@@ -3,6 +3,7 @@ package com.example.OrderManagment.mapper;
 import com.example.OrderManagment.Entity.User;
 import com.example.OrderManagment.dto.CreateUserRequestDto;
 import com.example.OrderManagment.dto.UserResponseDto;
+import com.example.OrderManagment.dto.UserUpdateDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,10 +26,23 @@ public class UserMapper {
         return user;
     }
 
-
-
-
-
+    public void updateEntityFromDto(UserUpdateDto userUpdateDto, User user) {
+        if (userUpdateDto == null || user == null) {
+            return;
+        }
+        if (userUpdateDto.getUsername() != null) {
+            user.setUsername(userUpdateDto.getUsername());
+        }
+        if (userUpdateDto.getEmail() != null) {
+            user.setEmail(userUpdateDto.getEmail());
+        }
+        if (userUpdateDto.getFirstName() != null) {
+            user.setFirstName(userUpdateDto.getFirstName());
+        }
+        if (userUpdateDto.getLastName() != null) {
+            user.setLastName(userUpdateDto.getLastName());
+        }
+    }
 
 
     public UserResponseDto toDto(User user) {

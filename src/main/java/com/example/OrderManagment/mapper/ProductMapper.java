@@ -3,7 +3,7 @@ package com.example.OrderManagment.mapper;
 import com.example.OrderManagment.Entity.Product;
 import com.example.OrderManagment.dto.CreateProductRequestDto;
 import com.example.OrderManagment.dto.ProductResponseDto;
-import com.example.OrderManagment.dto.ProductStatusUpdateRequest;
+import com.example.OrderManagment.dto.ProductStatusUpdateRequestDto;
 import com.example.OrderManagment.dto.ProductUpdateRequestDto;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +72,7 @@ public class ProductMapper {
 
     }
 
-    public void updateEntityStatusFromDto(ProductStatusUpdateRequest dto, Product product) {
+    public void updateEntityStatusFromDto(ProductStatusUpdateRequestDto dto, Product product) {
         if (dto == null || product == null) {
             return ;
         }

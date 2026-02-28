@@ -6,10 +6,7 @@ import com.example.OrderManagment.Exception.BusinessException;
 import com.example.OrderManagment.Exception.ProductNotFoundException;
 import com.example.OrderManagment.Repository.OrderRepository;
 import com.example.OrderManagment.Repository.ProductRepository;
-import com.example.OrderManagment.dto.CreateProductRequestDto;
-import com.example.OrderManagment.dto.ProductResponseDto;
-import com.example.OrderManagment.dto.ProductStatusUpdateRequest;
-import com.example.OrderManagment.dto.ProductUpdateRequestDto;
+import com.example.OrderManagment.dto.*;
 import com.example.OrderManagment.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDto changeStatusProduct(Long id, ProductStatusUpdateRequest productRequestDto) {
+    public ProductResponseDto changeStatusProduct(Long id, ProductStatusUpdateRequestDto productRequestDto) {
         Optional<Product> productOptional = productRepository.findById(id);
 
         Product productToUpdateStatus = productOptional
@@ -72,7 +69,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException("Card not found: " + id);
+            throw new ProductNotFoundException("Product not found: " + id);
         }
         if (orderRepository.existsByOrderItem_Product_Id(id)) {
             throw new BusinessException("You cannot delete the product contained in the order");
@@ -85,5 +82,10 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponseDto> getProductsFromStatus(ProductStatus productStatus) {
         List<Product> products = productRepository.findByStatus(productStatus);
         return productMapper.toDtoList(products);
+    }
+
+    @Override
+    public List<ProductCountAnalyticsDto> getBestSellers() {
+        return productRepository.findBestSellers();
     }
 }

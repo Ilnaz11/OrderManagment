@@ -8,10 +8,7 @@ import com.example.OrderManagment.Exception.UserNotFoundException;
 import com.example.OrderManagment.Repository.OrderRepository;
 import com.example.OrderManagment.Repository.ProductRepository;
 import com.example.OrderManagment.Repository.UserRepository;
-import com.example.OrderManagment.dto.CreateOrderItemRequestDto;
-import com.example.OrderManagment.dto.CreateOrderRequestDto;
-import com.example.OrderManagment.dto.OrderResponseDto;
-import com.example.OrderManagment.dto.UpdateOrderStatusRequestDto;
+import com.example.OrderManagment.dto.*;
 import com.example.OrderManagment.mapper.OrderMapper;
 import org.springframework.stereotype.Service;
 
@@ -301,4 +298,20 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.save(order);
     }
+
+    @Override
+    public Long getTotalCountOrders() {
+        return orderRepository.count();
+    }
+
+    @Override
+    public List<OrderStatusCountDto> getCountOrderByStatus() {
+        return orderRepository.countOrderByStatus(); //количество заказов по каждому статусу
+    }
+
+    @Override
+    public BigDecimal getSumOrderByStatus() {
+        return orderRepository.sumTotalPriceByStatus(OrderStatus.DELIVERED);
+    }
+
 }

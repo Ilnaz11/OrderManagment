@@ -1,9 +1,11 @@
 package com.example.OrderManagment.Service;
 
 import com.example.OrderManagment.Entity.User;
+import com.example.OrderManagment.Exception.UserNotFoundException;
 import com.example.OrderManagment.Repository.UserRepository;
 import com.example.OrderManagment.dto.CreateUserRequestDto;
 import com.example.OrderManagment.dto.UserResponseDto;
+import com.example.OrderManagment.dto.UserUpdateDto;
 import com.example.OrderManagment.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public UserResponseDto updateUser(Long id, UserUpdateDto userUpdateDto) {
+        Optional<User> userOptional = userRepository.findById(id);
+
+        User user = userOptional
+                .orElseThrow(() -> new UserNotFoundException("Not found user with ID: " + id));
+
+        userMapper.updateEntityFromDto(userUpdateDto, user);
+
+        return userMapper.toDto(user);
     }
 
     @Override
