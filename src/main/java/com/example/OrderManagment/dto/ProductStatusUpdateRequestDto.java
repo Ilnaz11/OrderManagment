@@ -4,6 +4,6 @@ import com.example.OrderManagment.Entity.ProductStatus;
 import lombok.Data;
 
 @Data
-public class ProductStatusUpdateRequest {
+public class ProductStatusUpdateRequestDto {
     private ProductStatus productStatus;
 }

@@ -2,6 +2,7 @@ package com.example.OrderManagment.Service;
 
 import com.example.OrderManagment.dto.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,19 +14,13 @@ public interface OrderService {
     List<OrderResponseDto> getAllOrders();
     List<OrderResponseDto> getOrdersFromUser(Long userId);
     OrderResponseDto updateOrderStatus(Long orderId, UpdateOrderStatusRequestDto updateOrderStatusRequestDto);
-//    void deleteById(Long id);
     void cancelOrderItem(Long orderId, Long orderItemId);
+    Long getTotalCountOrders();
+    List<OrderStatusCountDto> getCountOrderByStatus();
+    public BigDecimal getSumOrderByStatus();
 
 
 
 
 
 }
-//•	Создание заказа
-//•	Добавление товаров в заказ
-//•	Удаление товаров из заказа
-//•	Получение заказа по ID
-//•	Получение списка заказов
-//•	Получение заказов пользователя
-//•	Изменение статуса заказа
-//•	Частичная отмена заказа (отмена отдельных позиций)

@@ -2,11 +2,11 @@ package com.example.OrderManagment.Service;
 
 import com.example.OrderManagment.Entity.Product;
 import com.example.OrderManagment.Entity.ProductStatus;
+import com.example.OrderManagment.Exception.BusinessException;
+import com.example.OrderManagment.Exception.ProductNotFoundException;
+import com.example.OrderManagment.Repository.OrderRepository;
 import com.example.OrderManagment.Repository.ProductRepository;
-import com.example.OrderManagment.dto.CreateProductRequestDto;
-import com.example.OrderManagment.dto.ProductResponseDto;
-import com.example.OrderManagment.dto.ProductStatusUpdateRequest;
-import com.example.OrderManagment.dto.ProductUpdateRequestDto;
+import com.example.OrderManagment.dto.*;
 import com.example.OrderManagment.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 
@@ -17,16 +17,20 @@ import java.util.Optional;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
     private final ProductMapper productMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper) {
+    public ProductServiceImpl(ProductRepository productRepository, OrderRepository orderRepository, ProductMapper productMapper) {
         this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
         this.productMapper = productMapper;
     }
 
 
     @Override
     public ProductResponseDto createProduct(CreateProductRequestDto productRequestDto) {
+        // Тут можно добавить чтобы
+        // только менеджер мог создавать товар
         Product product = productMapper.toEntity(productRequestDto);
         Product product1 = productRepository.save(product);
         return productMapper.toDto(product1);
@@ -45,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDto changeStatusProduct(Long id, ProductStatusUpdateRequest productRequestDto) {
+    public ProductResponseDto changeStatusProduct(Long id, ProductStatusUpdateRequestDto productRequestDto) {
         Optional<Product> productOptional = productRepository.findById(id);
 
         Product productToUpdateStatus = productOptional
@@ -63,13 +67,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(Long id) { // Тут добавлю реализацию чтобы соответствовало бизнес правилам
+    public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ProductNotFoundException("Product not found: " + id);
+        }
+        if (orderRepository.existsByOrderItem_Product_Id(id)) {
+            throw new BusinessException("You cannot delete the product contained in the order");
+        }
         productRepository.deleteById(id);
+
     }
 
     @Override
     public List<ProductResponseDto> getProductsFromStatus(ProductStatus productStatus) {
         List<Product> products = productRepository.findByStatus(productStatus);
         return productMapper.toDtoList(products);
+    }
+
+    @Override
+    public List<ProductCountAnalyticsDto> getBestSellers() {
+        return productRepository.findBestSellers();
     }
 }
