@@ -17,7 +17,7 @@ public interface OrderService {
     void cancelOrderItem(Long orderId, Long orderItemId);
     Long getTotalCountOrders();
     List<OrderStatusCountDto> getCountOrderByStatus();
-    public BigDecimal getSumOrderByStatus();
+    BigDecimal getSumOrderByStatus();
 
 
 
