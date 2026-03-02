@@ -19,14 +19,14 @@ public class OrderController {
     }
 
     @PostMapping
-    public OrderResponseDto createOrder(CreateOrderRequestDto createOrderRequestDto) {
+    public OrderResponseDto createOrder(@RequestBody CreateOrderRequestDto createOrderRequestDto) {
         return orderService.createOrder(createOrderRequestDto);
     }
 
-    @PostMapping
-    public OrderResponseDto addProductInOrder(@PathVariable Long id,
+    @PostMapping("/{orderId}/items")
+    public OrderResponseDto addProductInOrder(@PathVariable Long orderId,
                                               @RequestBody List<CreateOrderItemRequestDto> createOrderItemRequestDtoList) {
-        return orderService.addProductInOrder(id, createOrderItemRequestDtoList);
+        return orderService.addProductInOrder(orderId, createOrderItemRequestDtoList);
     }
 
     @DeleteMapping("/{orderId}/orderItems/{orderItemId}/removeOrderItem")
@@ -50,9 +50,9 @@ public class OrderController {
     }
 
     @PatchMapping("/update/{id}")
-    public OrderResponseDto updateOrderStatus(@PathVariable Long orderId,
+    public OrderResponseDto updateOrderStatus(@PathVariable Long id,
                                               @RequestBody UpdateOrderStatusRequestDto updateOrderStatusRequestDto) {
-        return orderService.updateOrderStatus(orderId, updateOrderStatusRequestDto);
+        return orderService.updateOrderStatus(id, updateOrderStatusRequestDto);
     }
 
     @PatchMapping("/{orderId}/orderItem/{orderItemId}/cancel")

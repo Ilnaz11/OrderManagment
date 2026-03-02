@@ -71,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
         if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException("Product not found: " + id);
         }
-        if (orderRepository.existsByOrderItem_Product_Id(id)) {
+        if (orderRepository.existsByOrderItemsProductId(id)) {
             throw new BusinessException("You cannot delete the product contained in the order");
         }
         productRepository.deleteById(id);
@@ -80,7 +80,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponseDto> getProductsFromStatus(ProductStatus productStatus) {
-        List<Product> products = productRepository.findByStatus(productStatus);
+        List<Product> products = productRepository.findByProductStatus(productStatus);
         return productMapper.toDtoList(products);
     }
 

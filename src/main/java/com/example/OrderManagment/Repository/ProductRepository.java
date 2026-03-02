@@ -11,11 +11,11 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findByStatus(ProductStatus productStatus);
+    List<Product> findByProductStatus(ProductStatus productStatus);
 
 
     @Query("""
-            select new com.example.OrderManagement.dto.ProductCountAnalyticsDto(
+            select new com.example.OrderManagment.dto.ProductCountAnalyticsDto(
             p.id,
             p.name,
             sum(oi.quantity)) from OrderItem oi join oi.product p join oi.order o
