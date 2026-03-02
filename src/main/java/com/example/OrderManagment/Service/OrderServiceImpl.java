@@ -64,14 +64,17 @@ public class OrderServiceImpl implements OrderService {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setProduct(product);
-            orderItem.setQuantity(product.getQuantity());
+            orderItem.setQuantity(items.getQuantity());
             orderItem.setPriceAtOrderTime(product.getPrice());
             orderItem.setStatus(OrderItemStatus.ACTIVE);
 
             orderItems.add(orderItem);
 
+            product.setQuantity(product.getQuantity() - items.getQuantity());
+
         }
         order.setOrderItems(orderItems);
+
 
         BigDecimal totalPrice = orderItems.stream()
                 .filter(orderItem -> orderItem.getStatus() == OrderItemStatus.ACTIVE)
@@ -89,9 +92,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto addProductInOrder(Long id, List<CreateOrderItemRequestDto> items) {
-
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException("Not found Order with ID: " + id));
+
+        if (order.getCurrentStatus() == OrderStatus.DELIVERED) {
+            throw new BusinessException("You cannot add product in this Order");
+        }
 
         List<OrderItem> orderItems = order.getOrderItems();
 
@@ -112,18 +118,18 @@ public class OrderServiceImpl implements OrderService {
                 OrderItem orderItem = optionalItem.get();
                 orderItem.setQuantity(orderItem.getQuantity() + dto.getQuantity());
             }
+            else {
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                orderItem.setProduct(product);
+                orderItem.setPriceAtOrderTime(product.getPrice());
+                orderItem.setQuantity(dto.getQuantity());
+                orderItem.setStatus(OrderItemStatus.ACTIVE);
 
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(product);
-            orderItem.setPriceAtOrderTime(product.getPrice());
-            orderItem.setQuantity(dto.getQuantity());
-            orderItem.setStatus(OrderItemStatus.ACTIVE);
+                orderItems.add(orderItem);
 
-            orderItems.add(orderItem);
-
-            product.setQuantity(product.getQuantity() - dto.getQuantity());
-
+                product.setQuantity(product.getQuantity() - dto.getQuantity());
+            }
 
         }
         BigDecimal totalPrice = orderItems.stream() // Итоговая цена заказа цена * количество товаров
@@ -133,6 +139,8 @@ public class OrderServiceImpl implements OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         order.setTotalPrice(totalPrice);
+
+        order.setLastChange(LocalDateTime.now());
 
         orderRepository.save(order);
 
@@ -167,6 +175,8 @@ public class OrderServiceImpl implements OrderService {
                         .multiply(BigDecimal.valueOf(orderItem1.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalPrice(totalPrice);
+
+        order.setLastChange(LocalDateTime.now());
 
         orderRepository.save(order);
 
@@ -226,6 +236,7 @@ public class OrderServiceImpl implements OrderService {
             order.setCurrentStatus(dto.getOrderStatus());
         }
 
+        order.setLastChange(LocalDateTime.now());
 
         Order savedOrderStatus = orderRepository.save(order);
 
@@ -295,6 +306,7 @@ public class OrderServiceImpl implements OrderService {
             orderHistories.add(orderHistory);
 
         }
+        order.setLastChange(LocalDateTime.now());
 
         orderRepository.save(order);
     }

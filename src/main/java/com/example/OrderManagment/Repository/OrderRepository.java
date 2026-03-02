@@ -14,10 +14,10 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserId(Long userId);
-    boolean existsByOrderItem_Product_Id(Long id);
+    boolean existsByOrderItemsProductId(Long id);
 
     @Query("""
-        select new com.example.OrderManagement.dto.OrderStatusCountDto(
+        select new com.example.OrderManagment.dto.OrderStatusCountDto(
             o.currentStatus,
             count(o)
         )
@@ -27,9 +27,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<OrderStatusCountDto> countOrderByStatus();
 
     @Query("""
-            selet coalesce(sum(o.totalPrice), 0)
+            seleсt coalesce(sum(o.totalPrice), 0)
             from Order o
-            where o.currentStatus = : status
+            where o.currentStatus = :status
             """) // Возвращает общую сумму завершенных заказов
     BigDecimal sumTotalPriceByStatus(@Param("status") OrderStatus orderStatus);
 
