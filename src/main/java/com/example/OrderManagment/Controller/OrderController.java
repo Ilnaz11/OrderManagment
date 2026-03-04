@@ -2,6 +2,7 @@ package com.example.OrderManagment.Controller;
 
 import com.example.OrderManagment.Service.OrderService;
 import com.example.OrderManagment.dto.*;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -19,13 +20,13 @@ public class OrderController {
     }
 
     @PostMapping
-    public OrderResponseDto createOrder(@RequestBody CreateOrderRequestDto createOrderRequestDto) {
+    public OrderResponseDto createOrder(@RequestBody @Valid CreateOrderRequestDto createOrderRequestDto) {
         return orderService.createOrder(createOrderRequestDto);
     }
 
     @PostMapping("/{orderId}/items")
     public OrderResponseDto addProductInOrder(@PathVariable Long orderId,
-                                              @RequestBody List<CreateOrderItemRequestDto> createOrderItemRequestDtoList) {
+                                              @RequestBody @Valid List<CreateOrderItemRequestDto> createOrderItemRequestDtoList) {
         return orderService.addProductInOrder(orderId, createOrderItemRequestDtoList);
     }
 
@@ -51,7 +52,7 @@ public class OrderController {
 
     @PatchMapping("/update/{id}")
     public OrderResponseDto updateOrderStatus(@PathVariable Long id,
-                                              @RequestBody UpdateOrderStatusRequestDto updateOrderStatusRequestDto) {
+                                              @RequestBody @Valid UpdateOrderStatusRequestDto updateOrderStatusRequestDto) {
         return orderService.updateOrderStatus(id, updateOrderStatusRequestDto);
     }
 

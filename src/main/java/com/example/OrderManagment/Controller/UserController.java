@@ -6,6 +6,7 @@ import com.example.OrderManagment.Service.UserServiceImpl;
 import com.example.OrderManagment.dto.CreateUserRequestDto;
 import com.example.OrderManagment.dto.UserResponseDto;
 import com.example.OrderManagment.dto.UserUpdateDto;
+import jakarta.validation.Valid;
 import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserResponseDto createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
+    public UserResponseDto createUser(@RequestBody @Valid CreateUserRequestDto createUserRequestDto) {
         return userService.createUser(createUserRequestDto);
     }
 

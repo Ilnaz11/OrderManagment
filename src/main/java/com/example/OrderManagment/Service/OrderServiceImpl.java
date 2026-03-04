@@ -10,6 +10,7 @@ import com.example.OrderManagment.Repository.ProductRepository;
 import com.example.OrderManagment.Repository.UserRepository;
 import com.example.OrderManagment.dto.*;
 import com.example.OrderManagment.mapper.OrderMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     private final ProductRepository productRepository;
@@ -37,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto createOrder(CreateOrderRequestDto createOrderRequestDto) {
+        log.info("Order is created");
         Long userId = createOrderRequestDto.getUserId();
 
         User user = userRepository.findById(userId)
@@ -117,8 +120,8 @@ public class OrderServiceImpl implements OrderService {
             if (optionalItem.isPresent()) {
                 OrderItem orderItem = optionalItem.get();
                 orderItem.setQuantity(orderItem.getQuantity() + dto.getQuantity());
-            }
-            else {
+
+            } else {
                 OrderItem orderItem = new OrderItem();
                 orderItem.setOrder(order);
                 orderItem.setProduct(product);
@@ -143,6 +146,7 @@ public class OrderServiceImpl implements OrderService {
         order.setLastChange(LocalDateTime.now());
 
         orderRepository.save(order);
+        log.info("Product added to the order with id: {}", id);
 
         return orderMapper.toDto(order);
 
@@ -179,11 +183,13 @@ public class OrderServiceImpl implements OrderService {
         order.setLastChange(LocalDateTime.now());
 
         orderRepository.save(order);
+        log.info("The OrderItem with the ID: {} was removed from the order with the ID: {}", orderItemId, orderId);
 
     }
 
     @Override
     public Optional<OrderResponseDto> getOrderById(Long id) {
+        log.info("Get order by ID: {}", id);
         Optional<Order> optionalOrder = orderRepository.findById(id);
         Order order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Not found Order with id: " + id));
         return optionalOrder.map(orderMapper::toDto);
@@ -191,15 +197,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponseDto> getAllOrders() {
+        log.info("Get all orders");
         List<Order> order = orderRepository.findAll();
         return orderMapper.toDtoList(order);
     }
 
     @Override
     public List<OrderResponseDto> getOrdersFromUser(Long userId) {
+        log.info("Get order from User: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Not found User with id: " + userId));
-        List<Order> orders = orderRepository.findByUserId(userId);
+        List<Order> orders = orderRepository.findByUser_Id(userId);
         return orderMapper.toDtoList(orders);
     }
 
@@ -307,6 +315,7 @@ public class OrderServiceImpl implements OrderService {
 
         }
         order.setLastChange(LocalDateTime.now());
+        log.info("OrderItem with the ID: {} was cancelled from the order with the ID: {}", orderItemId, orderId);
 
         orderRepository.save(order);
     }

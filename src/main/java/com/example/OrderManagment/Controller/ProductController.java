@@ -3,6 +3,7 @@ package com.example.OrderManagment.Controller;
 import com.example.OrderManagment.Entity.ProductStatus;
 import com.example.OrderManagment.Service.ProductService;
 import com.example.OrderManagment.dto.*;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,17 +19,17 @@ public class ProductController {
     }
 
     @PostMapping
-    public ProductResponseDto createProduct(@RequestBody CreateProductRequestDto productRequestDto) {
+    public ProductResponseDto createProduct(@RequestBody @Valid CreateProductRequestDto productRequestDto) {
         return productService.createProduct(productRequestDto);
     }
 
     @PutMapping("/update/{id}")
-    public ProductResponseDto updateProduct(@PathVariable Long id, @RequestBody ProductUpdateRequestDto productUpdateRequestDto) {
+    public ProductResponseDto updateProduct(@PathVariable Long id, @RequestBody @Valid ProductUpdateRequestDto productUpdateRequestDto) {
         return productService.updateProduct(id, productUpdateRequestDto);
     }
 
     @PatchMapping("/update/status/{id}")
-    public ProductResponseDto changeStatusProduct(@PathVariable Long id, @RequestBody ProductStatusUpdateRequestDto productStatusUpdateRequestDto) {
+    public ProductResponseDto changeStatusProduct(@PathVariable Long id, @RequestBody @Valid ProductStatusUpdateRequestDto productStatusUpdateRequestDto) {
         return productService.changeStatusProduct(id, productStatusUpdateRequestDto);
     }
 

@@ -1,5 +1,7 @@
 package com.example.OrderManagment.Service;
 
+import com.example.OrderManagment.Entity.OrderItemStatus;
+import com.example.OrderManagment.Entity.OrderStatus;
 import com.example.OrderManagment.Entity.Product;
 import com.example.OrderManagment.Entity.ProductStatus;
 import com.example.OrderManagment.Exception.BusinessException;
@@ -8,12 +10,14 @@ import com.example.OrderManagment.Repository.OrderRepository;
 import com.example.OrderManagment.Repository.ProductRepository;
 import com.example.OrderManagment.dto.*;
 import com.example.OrderManagment.mapper.ProductMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
@@ -31,6 +35,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto createProduct(CreateProductRequestDto productRequestDto) {
         // Тут можно добавить чтобы
         // только менеджер мог создавать товар
+        log.info("Product is created");
         Product product = productMapper.toEntity(productRequestDto);
         Product product1 = productRepository.save(product);
         return productMapper.toDto(product1);
@@ -44,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         productMapper.updateEntityFromDto(productRequestDto, productToUpdate);
+        log.info("Update product with id: {}", id);
 
         return productMapper.toDto(productToUpdate);
     }
@@ -56,12 +62,14 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         productMapper.updateEntityStatusFromDto(productRequestDto, productToUpdateStatus);
+        log.info("Change product status with id: {}", id);
 
         return productMapper.toDto(productToUpdateStatus);
     }
 
     @Override
     public List<ProductResponseDto> getAllProducts() {
+        log.info("Get all products");
         List<Product> products = productRepository.findAll();
         return productMapper.toDtoList(products);
     }
@@ -75,17 +83,20 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessException("You cannot delete the product contained in the order");
         }
         productRepository.deleteById(id);
+        log.info("Delete product by id: {}", id);
 
     }
 
     @Override
     public List<ProductResponseDto> getProductsFromStatus(ProductStatus productStatus) {
+        log.info("Get products from productStatus {}", productStatus);
         List<Product> products = productRepository.findByProductStatus(productStatus);
         return productMapper.toDtoList(products);
     }
 
     @Override
     public List<ProductCountAnalyticsDto> getBestSellers() {
-        return productRepository.findBestSellers();
+        log.info("Get best products");
+        return productRepository.findBestSellers(OrderStatus.DELIVERED, OrderItemStatus.ACTIVE);
     }
 }
