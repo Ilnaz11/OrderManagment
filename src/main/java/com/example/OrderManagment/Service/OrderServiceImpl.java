@@ -134,6 +134,10 @@ public class OrderServiceImpl implements OrderService {
                 product.setQuantity(product.getQuantity() - dto.getQuantity());
             }
 
+            if(product.getQuantity() == 0) {
+                product.setProductStatus(ProductStatus.OUT_OF_STOCK);
+            }
+
         }
         BigDecimal totalPrice = orderItems.stream() // Итоговая цена заказа цена * количество товаров
                 .filter(orderItem -> orderItem.getStatus() == OrderItemStatus.ACTIVE)
@@ -150,6 +154,7 @@ public class OrderServiceImpl implements OrderService {
 
         return orderMapper.toDto(order);
 
+        // Установка статуса OUT_OF_STOCK при количество товара 0
     }
 
     @Override
@@ -159,9 +164,9 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderItem> orderItems = order.getOrderItems();
 
-        if (order.getCurrentStatus() == OrderStatus.DELIVERED) {
-            throw new OrderNotFoundException("You cannot change the order information");
-        }
+//        if (order.getCurrentStatus() == OrderStatus.DELIVERED) {
+//            throw new OrderNotFoundException("You cannot change the order information");
+//        }
 
         Optional<OrderItem> orderItem = orderItems.stream()
                 .filter(orderItem1 -> orderItem1.getId().equals(orderItemId)).findFirst();
@@ -216,15 +221,25 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(()-> new OrderNotFoundException("Not found Order with id: " + orderId));
 
+//        List<OrderItem> orderItems = order.getOrderItems();
+
         if (order.getCurrentStatus() == OrderStatus.DELIVERED
                 || order.getCurrentStatus() == OrderStatus.CANCELLED) {
             throw new BusinessException("You cannot change Order status");
         }
 
+//        OrderItem orderItem = orderItems.stream()
+//                .filter(orderItem1 -> orderItem1.getId().equals(orderItemId)).findFirst()
+//                .orElseThrow(() -> new OrderNotFoundException("Not found OrderItem"));
+//
+//        if (orderItem.getStatus() == OrderItemStatus.CANCELLED) {
+//            throw new BusinessException("You cannot cancel a repeat order position");
+//        }
+
         List<OrderHistory> orderHistories = order.getOrderHistories();
 
         if (!order.getCurrentStatus().canTransitionTo(dto.getOrderStatus())) {
-            throw new BusinessException("Нельзя перейти с " + order.getCurrentStatus() + "в " + dto.getOrderStatus());
+            throw new BusinessException("Нельзя перейти с " + order.getCurrentStatus() + " в " + dto.getOrderStatus());
         }
 
         if (order.getCurrentStatus() != dto.getOrderStatus()) {
@@ -242,6 +257,7 @@ public class OrderServiceImpl implements OrderService {
             orderHistories.add(orderHistory);
 
             order.setCurrentStatus(dto.getOrderStatus());
+//            orderItem.setStatus(dto.getOrderItemStatus());
         }
 
         order.setLastChange(LocalDateTime.now());
