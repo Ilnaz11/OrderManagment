@@ -49,9 +49,11 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         productMapper.updateEntityFromDto(productRequestDto, productToUpdate);
+
+        Product savedProduct = productRepository.save(productToUpdate);
         log.info("Update product with id: {}", id);
 
-        return productMapper.toDto(productToUpdate);
+        return productMapper.toDto(savedProduct);
     }
 
     @Override
@@ -62,9 +64,11 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         productMapper.updateEntityStatusFromDto(productRequestDto, productToUpdateStatus);
+
+        Product savedProduct = productRepository.save(productToUpdateStatus);
         log.info("Change product status with id: {}", id);
 
-        return productMapper.toDto(productToUpdateStatus);
+        return productMapper.toDto(savedProduct);
     }
 
     @Override

@@ -10,6 +10,6 @@ import lombok.Data;
 public class UpdateOrderStatusRequestDto {
     @NotNull(message = "Статус заказа не может быть пустым")
     private OrderStatus orderStatus;
-    @NotNull(message = "Статус позиции заказа не может быть пустым")
-    private OrderItemStatus orderItemStatus;
+//    @NotNull(message = "Статус позиции заказа не может быть пустым")
+//    private OrderItemStatus orderItemStatus;
 }

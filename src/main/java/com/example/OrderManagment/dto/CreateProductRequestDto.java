@@ -17,6 +17,6 @@ public class CreateProductRequestDto {
     @NotNull(message = "Цена товара не должна быть пустой")
     private BigDecimal price;
     private Integer quantity;
-    @NotBlank(message = "Статус товара не может быть пустым")
+    @NotNull(message = "Статус товара не может быть пустым")
     private ProductStatus productStatus;
 }

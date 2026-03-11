@@ -35,6 +35,7 @@ public class OrderMapper {
         OrderResponseDto orderResponseDto = new OrderResponseDto();
 
         orderResponseDto.setId(order.getId());
+        orderResponseDto.setUserId(order.getUser().getId());
         orderResponseDto.setCurrentStatus(order.getCurrentStatus());
         orderResponseDto.setTotalPrice(order.getTotalPrice());
         orderResponseDto.setCreatedAt(order.getCreatedAt());
