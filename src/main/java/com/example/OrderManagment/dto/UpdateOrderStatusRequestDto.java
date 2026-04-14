@@ -1,8 +1,6 @@
 package com.example.OrderManagment.dto;
 
-import com.example.OrderManagment.Entity.OrderItemStatus;
 import com.example.OrderManagment.Entity.OrderStatus;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

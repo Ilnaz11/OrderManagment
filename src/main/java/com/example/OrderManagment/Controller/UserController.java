@@ -1,13 +1,11 @@
 package com.example.OrderManagment.Controller;
 
-import com.example.OrderManagment.Entity.User;
 import com.example.OrderManagment.Service.UserService;
-import com.example.OrderManagment.Service.UserServiceImpl;
 import com.example.OrderManagment.dto.CreateUserRequestDto;
 import com.example.OrderManagment.dto.UserResponseDto;
 import com.example.OrderManagment.dto.UserUpdateDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +13,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "Users", description = "Управление пользователями")
 public class UserController {
 
     private final UserService userService;
@@ -33,7 +32,7 @@ public class UserController {
         return userService.updateUser(id, userUpdateDto);
     }
 
-    @GetMapping("/users")
+    @GetMapping
     public List<UserResponseDto> getAllUsers() {
         return userService.getAllUsers();
     }

@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("Not found user with ID: " + id));
 
         userMapper.updateEntityFromDto(userUpdateDto, user);
+        User savedUser = userRepository.save(user);
 
         log.info("Update user with id: {}", id);
 

@@ -13,20 +13,20 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "orderHistories")
+@Table(name = "order_histories")
 public class OrderHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "update_Date")
+    @Column(name = "update_date")
     private LocalDateTime updateDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "old_Status")
+    @Column(name = "old_status")
     private OrderStatus oldStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "new_Status")
+    @Column(name = "new_status")
     private OrderStatus newStatus;
 
     @Column(name = "comment")

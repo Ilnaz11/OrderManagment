@@ -30,7 +30,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         select coalesce(sum(o.totalPrice), 0)
         from Order o
         where o.currentStatus = :status
-        """)
+        """) // Общая сумма завершенных товаров
     BigDecimal sumTotalPriceByStatus(@Param("status") OrderStatus orderStatus);
 
 

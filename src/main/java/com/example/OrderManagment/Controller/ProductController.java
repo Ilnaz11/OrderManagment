@@ -3,6 +3,8 @@ package com.example.OrderManagment.Controller;
 import com.example.OrderManagment.Entity.ProductStatus;
 import com.example.OrderManagment.Service.ProductService;
 import com.example.OrderManagment.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
+@Tag(name = "Products", description = "Управление товарами")
 public class ProductController {
 
     private final ProductService productService;
@@ -33,7 +36,7 @@ public class ProductController {
         return productService.changeStatusProduct(id, productStatusUpdateRequestDto);
     }
 
-    @GetMapping("/products")
+    @GetMapping
     public List<ProductResponseDto> getAllProducts() {
         return productService.getAllProducts();
     }
@@ -48,6 +51,7 @@ public class ProductController {
         return productService.getProductsFromStatus(productStatus);
     }
 
+    @Operation(summary = "Самые продаваемые товары")
     @GetMapping("/analytics")
     public List<ProductCountAnalyticsDto> getBestSellers() {
         return productService.getBestSellers();

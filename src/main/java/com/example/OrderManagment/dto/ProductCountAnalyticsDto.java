@@ -1,7 +1,5 @@
 package com.example.OrderManagment.dto;
 
-import lombok.Data;
-
 public class ProductCountAnalyticsDto {
 
     private Long productId;
