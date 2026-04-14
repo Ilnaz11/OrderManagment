@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> productOptional = productRepository.findById(id);
 
         Product productToUpdate = productOptional
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
 
         productMapper.updateEntityFromDto(productRequestDto, productToUpdate);
 
@@ -61,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> productOptional = productRepository.findById(id);
 
         Product productToUpdateStatus = productOptional
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
 
         productMapper.updateEntityStatusFromDto(productRequestDto, productToUpdateStatus);
 

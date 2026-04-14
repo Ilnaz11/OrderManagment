@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-order-histories
+      author: Ilnaz
+      changes:
+        - createTable:
+            tableName: order_histories
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: update_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: old_status
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: new_status
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: VARCHAR(255)
+              - column:
+                  name: order_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_orderhistories_order
+                    references: orders(id)

@@ -10,7 +10,7 @@ public interface OrderService {
     OrderResponseDto createOrder(CreateOrderRequestDto createOrderRequestDto);
     OrderResponseDto addProductInOrder(Long id, List<CreateOrderItemRequestDto> items);
     void removeItemOrder(Long orderId, Long orderItemId);
-    Optional<OrderResponseDto> getOrderById(Long id);
+    OrderResponseDto getOrderById(Long id);
     List<OrderResponseDto> getAllOrders();
     List<OrderResponseDto> getOrdersFromUser(Long userId);
     OrderResponseDto updateOrderStatus(Long orderId, UpdateOrderStatusRequestDto updateOrderStatusRequestDto);
@@ -18,6 +18,7 @@ public interface OrderService {
     Long getTotalCountOrders();
     List<OrderStatusCountDto> getCountOrderByStatus();
     BigDecimal getSumOrderByStatus();
+    void deleteOrder(Long orderId);
 
 
 

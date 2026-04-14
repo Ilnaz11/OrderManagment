@@ -1,10 +1,7 @@
 package com.example.OrderManagment.Service;
 
 import com.example.OrderManagment.Entity.*;
-import com.example.OrderManagment.Exception.BusinessException;
-import com.example.OrderManagment.Exception.OrderNotFoundException;
-import com.example.OrderManagment.Exception.ProductNotFoundException;
-import com.example.OrderManagment.Exception.UserNotFoundException;
+import com.example.OrderManagment.Exception.*;
 import com.example.OrderManagment.Repository.OrderRepository;
 import com.example.OrderManagment.Repository.ProductRepository;
 import com.example.OrderManagment.Repository.UserRepository;
@@ -12,6 +9,7 @@ import com.example.OrderManagment.dto.*;
 import com.example.OrderManagment.mapper.OrderMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderMapper = orderMapper;
     }
 
-    @Override
+    @Transactional
     public OrderResponseDto createOrder(CreateOrderRequestDto createOrderRequestDto) {
         log.info("Order is created");
         Long userId = createOrderRequestDto.getUserId();
@@ -61,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
 
             if (product.getProductStatus() != ProductStatus.ACTIVE
                     || product.getQuantity() == 0 || product.getQuantity() < items.getQuantity()) {
-                throw new RuntimeException("The product is not available");
+                throw new ProductNotAvailableException(product.getId());
             }
 
             OrderItem orderItem = new OrderItem();
@@ -75,6 +73,10 @@ public class OrderServiceImpl implements OrderService {
 
             product.setQuantity(product.getQuantity() - items.getQuantity());
 
+            if(product.getQuantity() == 0) {
+                product.setProductStatus(ProductStatus.OUT_OF_STOCK);
+            }
+
         }
         order.setOrderItems(orderItems);
 
@@ -87,19 +89,21 @@ public class OrderServiceImpl implements OrderService {
 
         order.setTotalPrice(totalPrice);
 
+
         orderRepository.save(order);
 
         return orderMapper.toDto(order);
 
     }
 
-    @Override
+    @Transactional
     public OrderResponseDto addProductInOrder(Long id, List<CreateOrderItemRequestDto> items) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException("Not found Order with ID: " + id));
 
-        if (order.getCurrentStatus() == OrderStatus.DELIVERED) {
-            throw new BusinessException("You cannot add product in this Order");
+        if (order.getCurrentStatus() == OrderStatus.DELIVERED || order.getCurrentStatus() == OrderStatus.CANCELLED) {
+            throw new BusinessException("You cannot add product in this Order, because this " +
+                    "Order maybe DELIVERED or CANCELLED");
         }
 
         List<OrderItem> orderItems = order.getOrderItems();
@@ -110,16 +114,19 @@ public class OrderServiceImpl implements OrderService {
 
             if(product.getProductStatus() != ProductStatus.ACTIVE
                     || product.getQuantity() == 0 || product.getQuantity() < dto.getQuantity()) {
-                throw new RuntimeException("The product is not available");
+                throw new ProductNotAvailableException(product.getId());
             }
 
             Optional<OrderItem> optionalItem = orderItems.stream()
-                    .filter(item -> item.getProduct().getId().equals(dto.getProductId()))
+                    .filter(item -> item.getProduct().getId().equals(dto.getProductId())
+                            && item.getStatus() == OrderItemStatus.ACTIVE)
                     .findFirst();
 
             if (optionalItem.isPresent()) {
                 OrderItem orderItem = optionalItem.get();
                 orderItem.setQuantity(orderItem.getQuantity() + dto.getQuantity());
+
+                product.setQuantity(product.getQuantity() - dto.getQuantity());
 
             } else {
                 OrderItem orderItem = new OrderItem();
@@ -153,20 +160,18 @@ public class OrderServiceImpl implements OrderService {
         log.info("Product added to the order with id: {}", id);
 
         return orderMapper.toDto(order);
-
-        // Установка статуса OUT_OF_STOCK при количество товара 0
     }
 
-    @Override
+    @Transactional
     public void removeItemOrder(Long orderId, Long orderItemId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Not found Order with id: " + orderId));
 
         List<OrderItem> orderItems = order.getOrderItems();
 
-//        if (order.getCurrentStatus() == OrderStatus.DELIVERED) {
-//            throw new OrderNotFoundException("You cannot change the order information");
-//        }
+        if (order.getCurrentStatus() == OrderStatus.DELIVERED) {
+            throw new BusinessException("You cannot change the order information");
+        }
 
         Optional<OrderItem> orderItem = orderItems.stream()
                 .filter(orderItem1 -> orderItem1.getId().equals(orderItemId)).findFirst();
@@ -183,6 +188,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderItem1 -> orderItem1.getPriceAtOrderTime()
                         .multiply(BigDecimal.valueOf(orderItem1.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         order.setTotalPrice(totalPrice);
 
         order.setLastChange(LocalDateTime.now());
@@ -192,15 +198,15 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-    @Override
-    public Optional<OrderResponseDto> getOrderById(Long id) {
+    @Transactional(readOnly = true)
+    public OrderResponseDto getOrderById(Long id) {
         log.info("Get order by ID: {}", id);
-        Optional<Order> optionalOrder = orderRepository.findById(id);
-        Order order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Not found Order with id: " + id));
-        return optionalOrder.map(orderMapper::toDto);
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException("Not found Order with id: " + id));
+        return orderMapper.toDto(order);
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public List<OrderResponseDto> getAllOrders() {
         log.info("Get all orders");
         List<Order> order = orderRepository.findAll();
@@ -212,34 +218,41 @@ public class OrderServiceImpl implements OrderService {
         log.info("Get order from User: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Not found User with id: " + userId));
+
         List<Order> orders = orderRepository.findByUser_Id(userId);
         return orderMapper.toDtoList(orders);
     }
 
-    @Override
+    @Transactional
     public OrderResponseDto updateOrderStatus(Long orderId, UpdateOrderStatusRequestDto dto) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(()-> new OrderNotFoundException("Not found Order with id: " + orderId));
 
-//        List<OrderItem> orderItems = order.getOrderItems();
+        List<OrderItem> orderItems = order.getOrderItems();
 
         if (order.getCurrentStatus() == OrderStatus.DELIVERED
                 || order.getCurrentStatus() == OrderStatus.CANCELLED) {
             throw new BusinessException("You cannot change Order status");
         }
 
-//        OrderItem orderItem = orderItems.stream()
-//                .filter(orderItem1 -> orderItem1.getId().equals(orderItemId)).findFirst()
-//                .orElseThrow(() -> new OrderNotFoundException("Not found OrderItem"));
-//
-//        if (orderItem.getStatus() == OrderItemStatus.CANCELLED) {
-//            throw new BusinessException("You cannot cancel a repeat order position");
-//        }
 
         List<OrderHistory> orderHistories = order.getOrderHistories();
 
         if (!order.getCurrentStatus().canTransitionTo(dto.getOrderStatus())) {
             throw new BusinessException("Нельзя перейти с " + order.getCurrentStatus() + " в " + dto.getOrderStatus());
+        }
+
+        if (dto.getOrderStatus() == OrderStatus.CANCELLED) {
+            for (OrderItem item : orderItems) {
+                if (item.getStatus() == OrderItemStatus.ACTIVE) {
+                    Product product = item.getProduct();
+                    product.setQuantity(product.getQuantity() + item.getQuantity());
+                    item.setStatus(OrderItemStatus.CANCELLED);
+                    if (product.getQuantity() >= 1) {
+                        product.setProductStatus(ProductStatus.ACTIVE);
+                    }
+                }
+            }
         }
 
         if (order.getCurrentStatus() != dto.getOrderStatus()) {
@@ -257,7 +270,6 @@ public class OrderServiceImpl implements OrderService {
             orderHistories.add(orderHistory);
 
             order.setCurrentStatus(dto.getOrderStatus());
-//            orderItem.setStatus(dto.getOrderItemStatus());
         }
 
         order.setLastChange(LocalDateTime.now());
@@ -268,12 +280,9 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-//    @Override
-//    public void deleteById(Long id) {
-//        orderRepository.deleteById(id);
-//    }
 
-    @Override
+
+    @Transactional
     public void cancelOrderItem(Long orderId, Long orderItemId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(()-> new OrderNotFoundException("Not found order with id: " + orderId));
@@ -314,9 +323,6 @@ public class OrderServiceImpl implements OrderService {
 
         if (allItemsCancelled) {
             OrderStatus oldStatus = order.getCurrentStatus();
-            if (!oldStatus.canTransitionTo(OrderStatus.CANCELLED)) {
-                throw new BusinessException("Cannot cancel order from status: " + oldStatus);
-            }
 
             order.setCurrentStatus(OrderStatus.CANCELLED);
 
@@ -325,7 +331,7 @@ public class OrderServiceImpl implements OrderService {
             orderHistory.setUpdateDate(LocalDateTime.now());
             orderHistory.setOldStatus(oldStatus);
             orderHistory.setNewStatus(OrderStatus.CANCELLED);
-            orderHistory.setComment("Статус заказа был изменен с " + oldStatus + "на " + OrderStatus.CANCELLED);
+            orderHistory.setComment("Статус заказа был изменен с " + oldStatus + " на " + OrderStatus.CANCELLED);
 
             orderHistories.add(orderHistory);
 
@@ -349,6 +355,19 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public BigDecimal getSumOrderByStatus() {
         return orderRepository.sumTotalPriceByStatus(OrderStatus.DELIVERED);
+    }
+
+
+    @Transactional
+    public void deleteOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+        if (order.getCurrentStatus() != OrderStatus.CANCELLED) {
+            throw new BusinessException("You cannot delete this order");
+        }
+
+        orderRepository.delete(order);
     }
 
 }

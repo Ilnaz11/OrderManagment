@@ -1,6 +1,5 @@
 package com.example.OrderManagment.Service;
 
-import com.example.OrderManagment.Entity.User;
 import com.example.OrderManagment.dto.CreateUserRequestDto;
 import com.example.OrderManagment.dto.UserResponseDto;
 import com.example.OrderManagment.dto.UserUpdateDto;

@@ -13,14 +13,14 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "orderItems")
+@Table(name = "order_items")
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "quantity")
     private Integer quantity;
-    @Column(name = "price_At_Order_Time", nullable = false)
+    @Column(name = "price_at_order_time", nullable = false)
     private BigDecimal priceAtOrderTime;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

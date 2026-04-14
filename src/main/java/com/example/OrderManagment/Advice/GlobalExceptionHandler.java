@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex) {
         return ResponseEntity.
                 badRequest()
-                .body(error(400, "BUSINESS_ERORR", ex.getMessage()));
+                .body(error(400, "BUSINESS_ERROR", ex.getMessage()));
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
